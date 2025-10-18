@@ -1,0 +1,28 @@
+name: Send email on merge
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Send notification email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: 'Confirmação: Lição concluída'
+          body: |
+            Olá,
+            A branch foi mergeada em main — Lição concluída.
+            Repo: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Atenciosamente.
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: 'no-reply@yourdomain.com'
