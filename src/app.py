@@ -52,6 +52,48 @@ def get_activities():
     return activities
 
 
+# Add additional activities (2 sports, 2 artistic, 2 intellectual)
+new_activities = {
+    "Soccer Team": {
+        "description": "Competitive soccer team practicing and playing matches",
+        "schedule": "Tuesdays and Thursdays, 4:00 PM - 6:00 PM",
+        "max_participants": 22,
+        "participants": ["liam@mergington.edu"]
+    },
+    "Swimming Club": {
+        "description": "Lap swimming, technique drills, and friendly meets",
+        "schedule": "Mondays and Wednesdays, 5:00 PM - 6:30 PM",
+        "max_participants": 18,
+        "participants": []
+    },
+    "Art Club": {
+        "description": "Open studio time for drawing, painting, and mixed media",
+        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 16,
+        "participants": ["ava@mergington.edu"]
+    },
+    "Drama Club": {
+        "description": "Acting, stagecraft, and production of school plays",
+        "schedule": "Fridays, 3:30 PM - 6:00 PM",
+        "max_participants": 25,
+        "participants": ["noah@mergington.edu"]
+    },
+    "Debate Team": {
+        "description": "Competitive debate practice and interschool tournaments",
+        "schedule": "Thursdays, 4:00 PM - 5:30 PM",
+        "max_participants": 14,
+        "participants": ["sophia@mergington.edu"]
+    },
+    "Science Club": {
+        "description": "Hands-on experiments, science fairs, and research projects",
+        "schedule": "Mondays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": ["ethan@mergington.edu"]
+    }
+}
+activities.update(new_activities)
+
+
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
@@ -59,9 +101,16 @@ def signup_for_activity(activity_name: str, email: str):
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
 
-    # Get the specific activity
     activity = activities[activity_name]
 
+    # Validate student is not already signed up for the activity
+    if email in activity.get("participants", []):
+        raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+
+    # Validate capacity
+    if len(activity.get("participants", [])) >= activity.get("max_participants", 0):
+        raise HTTPException(status_code=400, detail="Activity is full")
+
     # Add student
-    activity["participants"].append(email)
-    return {"message": f"Signed up {email} for {activity_name}"}
+    activity.setdefault("participants", []).append(email)
+    return {"message": f"Signed up {email} for {activity_name}", "participants": activity["participants"]}
